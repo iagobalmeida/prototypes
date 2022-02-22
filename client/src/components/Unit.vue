@@ -1,38 +1,46 @@
 <template>
-    <div style="min-width:190px" class="mx-1 flex-1">
+    <div :style="`width:190px;opacity:${type?'1':'0'};`" class="mx-1 flex-1">
         <div :class="`card ${addClass || 'bg-light'}`">
             <div class="card-body shadow-sm p-1">
             <ul class="list-group bg-transparent">
-                <li class="list-group-item  bg-white">
+                <li class="list-group-item bg-transparent">
                     <p class="mb-0 d-flex justify-content-between align-items-center flex-row">
                         {{type ? type.toUpperCase() : '-'}}
                         <small class="ms-2" v-if="tierCurr > 0">Tier {{tierCurr}}</small>
                     </p>
                     
                 </li>
-                <li class="list-group-item bg-light d-flex jusfity-content-betweens align-items-center flex-row" v-if="!hideImage">
-                    <div class="me-2" :style="`background-image: url(${assets[type]}); ${tierCurr > 8 ? `filter: hue-rotate(${tierCurr}5deg);` : ''}`" :class="`unit tier-${Math.min(tierCurr, 8)}`" />
+                <li class="list-group-item bg-light d-flex justify-content-between align-items-center flex-row" v-if="!hideImage">
+                    <div ref="image" class="mx-auto" :style="`background-image: url(${assets[type]}); ${tierCurr > 8 ? `filter: hue-rotate(${tierCurr}5deg);` : ''}`" :class="`unit tier-${Math.min(tierCurr, 8)}`" />
                     <div class="p-1 ps-3 border-start d-flex justify-content-center align-items-between flex-column">
                         <small v-if="attack">
-                            <b>{{(Math.round(attack*100)/100).toFixed(2)}}&nbsp;</b> <small class="text-muted">ATK</small>
+                            <b>{{(Math.round(attack*100)/100).toFixed(2)}}&nbsp;</b>
+                            <small class="text-muted">
+                                <font-awesome-icon class="ms-2" size="1x" icon="hand-fist" />
+                            </small>
                         </small>
                         <small v-else>-</small>
                         <small v-if="deffense">
-                            <b>{{(Math.round(deffense*100)/100).toFixed(2)}}&nbsp;</b> <small class="text-muted">DEF</small>
+                            <b>{{(Math.round(deffense*100)/100).toFixed(2)}}&nbsp;</b>
+                            <small class="text-muted">
+                                <font-awesome-icon class="ms-2" size="1x" icon="shield" />
+                            </small>
                         </small>
                         <small v-else>-</small>
                     </div>
                 </li>
+                <li class="list-group-item text-start text-muted" v-if="showDescription">
+                    {{description}}
+                </li>
                 <li class="list-group-item p-0 bg-dark border-nonde">
-                    <!-- {{healthCurr}} -->
-                    <div class="progress-bar bg-danger progress-bar-striped progress-bar-animated text-end pe-2" :style="`width:${parseInt(100*healthCurr/healthMax)}%; height:20px;/`">
+                    <div class="progress-bar bg-danger progress-bar-striped progress-bar-animated text-end pe-2" :style="`width:${healthCurr > 0 ? Math.floor(100*healthCurr/healthMax) : 0}%; height:20px;/`">
                         <span class="position-absolute end-0">{{Math.round(healthCurr*100)/100}}&nbsp;</span>                        
                     </div>
                 </li>
-                <a v-if="owned" :class="`list-group-item list-group-item-action list-group-item-${price == -1 ? 'secondary': 'success'} `" v-on:click="handleUpgradeUnit(unitIndex)">
-                    <b>{{price > 0 ? price : '-'}}</b>&nbsp;
+                <a v-if="owned" :class="`list-group-item list-group-item-action list-group-item-${price || !owned == -1 ? 'secondary': 'success'} `" v-on:click="handleUpgradeUnit(unitIndex)">
+                    <b>{{price && owned > 0 ? price : '-'}}</b>&nbsp;
                     <font-awesome-icon class="ms-2" size="1x" icon="coins"/>&nbsp;
-                    <i v-if="price > 0">Upgrade</i>
+                    <i v-if="price && owned > 0">Upgrade</i>
                 </a>
             </ul>
             </div>
@@ -53,13 +61,29 @@ export default {
         attack: Number,
         deffense: Number,
         price: Number,
+        description: String,
         addClass: { type: String, default: '' },
-        hideImage: { type: Boolean, default: false }
+        hideImage: { type: Boolean, default: false },
+        showDescription: { type: Boolean, default: false }
   },
   methods: {
     handleUpgradeUnit(index) {
         this.$emit('handleUpgradeUnit', index);
     },
+  },
+  watch: {
+      healthCurr(newVal, oldVal) {
+          if(!this.hideImage) {
+            if(newVal > oldVal) {
+                this.$refs['image'].style.transform = `scale(1.1)`;
+            }else {
+                this.$refs['image'].style.transform = this.owned ? `translateY(10px)` : `translateY(-10px)`;
+            }
+            setTimeout(() => {
+                this.$refs['image'].style.transform = `translateY(0px) scale(1)`;
+            }, 125);
+          }
+      }
   }
 }
 </script>
@@ -76,11 +100,16 @@ export default {
     cursor: pointer;
 }
 
+.card.bg-dark .list-group-item {
+    color: white !important;
+}
+
 .unit {
     background-size: 576px 384px;
     background-position: 0px 0px;
     width: 48px;
     height: 48px;
+    transition: all 125ms ease-in-out;
 }
 
 .tier-1 {

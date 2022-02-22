@@ -19,7 +19,7 @@ class Match {
     // Emit cycle information to the room
     emitCycle() {
         if(this.tables){
-            console.log(`Emiting SERVER_MATCH_CYCLE on room #${this.roomName}`);
+            // console.log(`Emiting SERVER_MATCH_CYCLE on room #${this.roomName}`);
             this._io.to(this.roomName).emit('SERVER_MATCH_CYCLE', { tables: this.tables.map(table => table.cycleActions) });
             this.tables.forEach(table => table.cycleActions = []);
         }
@@ -27,13 +27,13 @@ class Match {
 
     // Emit initilization information to the room
     emitInit() {
-        console.log(`Emiting SERVER_MATCH_INIT on room #${this.roomName}`);
+        // console.log(`Emiting SERVER_MATCH_INIT on room #${this.roomName}`);
         this._io.to(this.roomName).emit('SERVER_MATCH_INIT', { tables: this.tables });
     }
 
     // Emit final information to the room
     emitEnd() {
-        console.log(`Emiting SERVER_MATCH_END on room #${this.roomName}`);
+        // console.log(`Emiting SERVER_MATCH_END on room #${this.roomName}`);
         this._io.to(this.roomName).emit('SERVER_MATCH_END', { tables: this.tables });
         this.tables.forEach(table =>  {
             const socketInstance = this._io.sockets.sockets.get(table.userId);

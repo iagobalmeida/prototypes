@@ -34,6 +34,8 @@
           :price="unit.price"
           :tierCurr="unit.attributes.tier.curr"
           :type="unit.name"
+          :showDescription="true"
+          :description="unit.description"
           v-on:handleUpgradeUnit="handleUpgradeUnit"/>
         </div>
         <div class="row mb-3">
@@ -104,7 +106,7 @@
       :life="userTable.life"
       :socketId="socketId"
       :userId="userTable.userId"
-      :tableIndex="0"
+      :tableIndex="1"
       :userName="userTable.userName"
       :unitList="userTable.unitList"
       :enemyList="userTable.enemyList"
@@ -116,11 +118,15 @@
       />
     </div>
 
-    <div class="row" v-show="user.status == 'won' || user.status == 'lost'">
-      <div class="col-12 mt-5">
-        <h2 class="mb-3 text-light" v-if="user.status == 'won'">Você venceu!</h2>
-        <h2 class="mb-3 text-light" v-else>Você perdeu!</h2>
-        <button class="btn btn-outline-light" v-on:click="handleEndContinueClick">Continuar</button>
+    <div class="row justify-content-center" v-show="user.status == 'won' || user.status == 'lost'">
+      <div class="col-6 mt-5">
+        <div class="card">
+          <div class="card-body">
+            <h2 class="mb-3" v-if="user.status == 'won'">Você venceu!</h2>
+            <h2 class="mb-3" v-else>Você perdeu!</h2>
+            <button class="btn btn-primary" v-on:click="handleEndContinueClick">Continuar</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -180,48 +186,7 @@ export default {
       const { tables } = data;
       tables.forEach((table, tableIndex) => {
         table.forEach(eventRef => {
-          const event = {...eventRef};
-          var health;
-          switch(event.type) {
-              case 'unit':
-                  health = Array.isArray(event.data) ? event.data[event.data.length-1].health : event.data.health;
-                  if(event.targetIndex == 'user') {
-                      this.tables[tableIndex].life = health;
-                  }else if(this.tables[tableIndex].enemyList[event.targetIndex]){
-                    this.tables[tableIndex].enemyList[event.targetIndex].attributes.health.curr = health;
-                    if(health <= 0) {
-                      this.tables[tableIndex].enemyList.splice(event.targetIndex, 1);
-                    }
-                  }
-              break;
-              case 'enemy':
-                  health = Array.isArray(event.data) ? event.data[event.data.length-1].health : event.data.health;
-                  if(event.targetIndex == 'user') {
-                      this.tables[tableIndex].life = health;
-                  }else if(this.tables[tableIndex].unitList[event.targetIndex]){
-                    this.tables[tableIndex].unitList[event.targetIndex].attributes.health.curr = health;
-                    if(health <= 0) {
-                      this.tables[tableIndex].unitList.splice(event.targetIndex, 1);
-                    }
-                  }
-              break;
-              case 'enemyDied':
-                var gold = event.data.gold;
-                this.tables[tableIndex].gold = gold;
-              break;
-              case 'addUnit':
-                  this.tables[tableIndex].unitList.push(event.data.newUnit);
-                  this.tables[tableIndex].gold = event.data.gold;
-                  this.tables[tableIndex].unitPrice = event.data.unitPrice;
-              break;
-              case 'addEnemy':
-                  this.tables[tableIndex].enemyList.push(event.data)
-              break;
-              case 'upgradeUnit':
-                  this.tables[tableIndex].unitList[event.index] = event.data.newUnit;
-                  this.tables[tableIndex].gold = event.data.gold;
-              break;
-          }
+          this.handleEvent(tableIndex, eventRef);
         })
       });
     },
@@ -235,6 +200,53 @@ export default {
     },
   },
   methods: {
+    handleEvent(tableIndex, eventRef) {
+      const event = {...eventRef};
+      var health;
+      switch(event.type) {
+          case 'unit':
+              health = Array.isArray(event.data) ? event.data[event.data.length-1].health : event.data.health;
+              if(event.targetIndex == 'user') {
+                  this.tables[tableIndex].life = health;
+              }else if(this.tables[tableIndex].enemyList[event.targetIndex]){
+                this.tables[tableIndex].enemyList[event.targetIndex].attributes.health.curr = health;
+                if(health <= 0) {
+                  this.tables[tableIndex].enemyList.splice(event.targetIndex, 1);
+                }
+              }
+          break;
+          case 'enemy':
+              health = Array.isArray(event.data) ? event.data[event.data.length-1].health : event.data.health;
+              if(event.targetIndex == 'user') {
+                  this.tables[tableIndex].life = health;
+              }else if(this.tables[tableIndex].unitList[event.targetIndex]){
+                this.tables[tableIndex].unitList[event.targetIndex].attributes.health.curr = health;
+                if(health <= 0) {
+                  this.tables[tableIndex].unitList[event.targetIndex].attributes.health.curr = 0;
+                  setTimeout(() => {
+                    this.tables[tableIndex].unitList.splice(event.targetIndex, 1);
+                  });
+                }
+              }
+          break;
+          case 'enemyDied':
+            var gold = event.data.gold;
+            this.tables[tableIndex].gold = gold;
+          break;
+          case 'addUnit':
+              this.tables[tableIndex].unitList.push(event.data.newUnit);
+              this.tables[tableIndex].gold = event.data.gold;
+              this.tables[tableIndex].unitPrice = event.data.unitPrice;
+          break;
+          case 'addEnemy':
+              this.tables[tableIndex].enemyList.push(event.data)
+          break;
+          case 'upgradeUnit':
+              this.tables[tableIndex].unitList[event.index] = event.data.newUnit;
+              this.tables[tableIndex].gold = event.data.gold;
+          break;
+      }
+    },
     handleLoginSubmit() {
       this.$socket.emit('CLIENT_LOGIN', { username: this.user.username, password: this.user.password });
     },

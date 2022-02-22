@@ -23,11 +23,14 @@ const createAttributeList = (attributes) => {
     };
 }
 
+
 class Unit {
-    constructor(type, price, attributes) {
+    constructor(type, price, attributes, description = 'Sem descrição', targetingFunction = 'random') {
         console.log(`\t\tCreating unit type ${type}`);
         this.type       = type;
         this.price      = parseFloat(price);
+        this.description = description;
+        this.targetingFunction = targetingFunction;
         this.attributes = createAttributeList(attributes || {
             tier:       { curr: 1,      max: 5,     progress: 1 },
             health:     { curr: 25,     max: 500,   progress: 2 },
@@ -73,8 +76,25 @@ class Unit {
 
     // Define the next target based on the targetList
     executeTargeting(targetList) {
-        const randomIndex = Math.floor(targetList.length * Math.random());
-        return randomIndex;
+        if(this.targetingFunction == 'random') {
+            var randomIndex = Math.floor(targetList.length * Math.random());
+            return randomIndex;
+        }else{
+            var order = this.targetingFunction.includes('-') ? -1 : 1;
+            var attribute = this.targetingFunction.replace('-','');
+            var selectedValue = 0;
+            var selectedIndex = -1;
+            targetList.forEach((target, targetIndex) => {
+                const curr = target.attributes[attribute]?.curr || 0;
+                if(curr * order > selectedValue || selectedIndex == -1){
+                    selectedValue = curr;
+                    selectedIndex = targetIndex;
+                }
+            });
+            return selectedIndex;
+        }
+
+
     }
 
     // Upgrades tier, attributes and price

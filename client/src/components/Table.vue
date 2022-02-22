@@ -3,7 +3,7 @@
         <!-- <UnitList :tableIndex="tableIndex" :unitList="enemyList" v-on:handleUpgradeUnit="() => {}"/>
         <UnitList :tableIndex="tableIndex" :unitList="unitList" v-on:handleUpgradeUnit="() => {}"/> -->
         <!-- <h5 class="my-2">Inimigos</h5> -->
-        <div class="d-flex justify-content-center align-items-center flex-row mb-3 overflow-auto">
+        <div class="d-flex justify-content-start align-items-center flex-row mb-3 overflow-auto">
             <Unit
             v-for="(enemy, enemyIndex) in enemyList" 
             :key="`table_${tableIndex}_enemy_${enemyIndex}`" 
@@ -16,7 +16,8 @@
             :price="enemy.price"
             :tierCurr="enemy.attributes.tier.curr"
             :type="enemy.type"
-            addClass="border-danger"
+            :addClass="owned ? `border-danger` : `bg-dark border-danger`"
+            :description="enemy.description"
             :hideImage="hideUnitImages"
             v-on:handleUpgradeUnit="() => {}"/>
             <Unit
@@ -31,11 +32,12 @@
             :price="0"
             :tierCurr="0"
             type=""
-            addClass="border-danger"
+            description="Sem descrição"
+            :addClass="owned ? `border-danger` : `bg-dark border-danger`"
             :hideImage="hideUnitImages"
             v-on:handleUpgradeUnit="() => {}"/>
         </div>
-        <div class="d-flex justify-content-center align-items-center flex-row mb-3 overflow-auto">
+        <div class="d-flex justify-content-start align-items-center flex-row mb-3 overflow-auto">
             <Unit
             v-for="(unit, unitIndex) in unitList" 
             :key="`table_${tableIndex}_unit_${unitIndex}`" 
@@ -49,6 +51,8 @@
             :tierCurr="unit.attributes.tier.curr"
             :type="unit.type"
             :hideImage="hideUnitImages"
+            :addClass="owned ? `` : `bg-dark`"
+            :description="unit.description"
             v-on:handleUpgradeUnit="handleUpgradeUnit"/>
             <Unit
             v-if="unitList.length == 0"
@@ -62,7 +66,8 @@
             :price="-1"
             :tierCurr="0"
             type=""
-            addClass="bg-light"
+            :addClass="owned ? `bg-light` : `bg-dark`"
+            description="Sem descrição"
             :hideImage="hideUnitImages"
             v-on:handleUpgradeUnit="() => {}"/>
         </div>
@@ -71,13 +76,13 @@
             <div class="card">
                 <div class="card-body shadow-sm">
                     <div class=" d-flex justify-content-between align-items-center flex-row">
-                        <div class="ms-3">
-                            <h2 class="mb-0 text-dark text-start" >{{userName || 'Sem nome'}}</h2>
-                            <h3 class="mb-0 text-dark text-start" >{{life}}<small class="text-muted">/500 HP</small></h3>
-                        </div>
                         <div>
-                            <h3 class="mb-2 text-muted text-end" >{{gold}} <font-awesome-icon class="ms-2" size="1x" icon="coins" /></h3>
+                            <h3 class="mb-2 text-muted text-start" >{{gold}} <font-awesome-icon class="ms-2" size="1x" icon="coins" /></h3>
                             <button class="btn btn-success w-100 mb-3" v-on:click="handleUnitAddClick">Comprar Unidade {{unitPrice}} <font-awesome-icon class="ms-2" size="1x" icon="coins" /></button>
+                        </div>
+                        <div class="ms-3">
+                            <h2 class="mb-0 text-dark text-end" >{{userName || 'Sem nome'}}</h2>
+                            <h3 class="mb-0 text-dark text-end" >{{life}}<small class="text-muted">/500 HP</small></h3>
                         </div>
                     </div>
                     <div class="progress">

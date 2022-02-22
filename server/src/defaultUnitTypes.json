@@ -5,33 +5,39 @@
             "price": 5,
             "attributes": {
                 "tier":       { "curr": 1,      "max": 1,     "progress": 1  },
-                "health":     { "curr": 25,     "max": 25,    "progress": 10 },
+                "health":     { "curr": 50,     "max": 50,    "progress": 20 },
                 "combo":      { "curr": 0,      "max": 0,     "progress": 1  },
                 "attack":     { "curr": 1.5,    "max": 1.5,   "progress": 1.5  },
                 "deffense":   { "curr": 1.5,    "max": 1.5,   "progress": 0.5  }
-            }
+            },
+            "targeting": "health",
+            "description": "Ataca o inimigo com mais saúde."
         },
         {
             "name": "archer",
             "price": 5,
             "attributes": {
                 "tier":       { "curr": 1,      "max": 1,     "progress": 1   },
-                "health":     { "curr": 30,     "max": 30,    "progress": 10  },
+                "health":     { "curr": 60,     "max": 60,    "progress": 20  },
                 "combo":      { "curr": 0,      "max": 0,     "progress": 0   },
                 "attack":     { "curr": 2,      "max": 2,     "progress": 1.5 },
                 "deffense":   { "curr": 1,      "max": 1,     "progress": 0.25 }
-            }
+            },
+            "targeting": "-health",
+            "description": "Ataca o inimigo com menos saúde."
         },
         {
             "name": "warrior",
             "price": 5,
             "attributes": {
                 "tier":       { "curr": 1,      "max": 5,     "progress": 1     },
-                "health":     { "curr": 100,    "max": 100,   "progress": 20    },
+                "health":     { "curr": 200,    "max": 200,   "progress": 40    },
                 "combo":      { "curr": 0,      "max": 0,     "progress": 0     },
-                "attack":     { "curr": 1.5,    "max": 1.5,   "progress": 1     },
-                "deffense":   { "curr": 2,      "max": 2,     "progress": 1     }
-            }
+                "attack":     { "curr": 1.5,    "max": 1.5,   "progress": 1.25  },
+                "deffense":   { "curr": 2,      "max": 2,     "progress": 1.1   }
+            },
+            "targeting": "random",
+            "description": "Ataca um inimigo aleatório."
         }
     ],
     "enemyTypes": [
@@ -39,12 +45,13 @@
             "name": "enemy",
             "price": 8,
             "attributes": {
-                "tier":       { "curr": 1,      "max": 1,     "progress": 1 },
-                "health":     { "curr": 11,     "max": 11,    "progress": 2 },
-                "combo":      { "curr": 0,      "max": 0,     "progress": 0 },
-                "attack":     { "curr": 2,      "max": 2,     "progress": 1 },
-                "deffense":   { "curr": 1.5,    "max": 1.5,   "progress": 1 }
-            }
+                "tier":       { "curr": 1,      "max": 1,     "progress": 1   },
+                "health":     { "curr": 22,     "max": 22,    "progress": 4   },
+                "combo":      { "curr": 0,      "max": 0,     "progress": 0   },
+                "attack":     { "curr": 2,      "max": 2,     "progress": 1.2 },
+                "deffense":   { "curr": 1.5,    "max": 1.5,   "progress": 0.5 }
+            },
+            "targeting": "random"
         }
     ]
 }

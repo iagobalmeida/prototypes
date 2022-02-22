@@ -50,11 +50,9 @@ class Table {
         return { damage,  health: this.life = Math.max(0, (this.life - damage).toFixed(2)) };
     }
     addUnit(ignoreMoney = false) {
-        console.log('this.gold', this.gold);
-        console.log('this.unitPrice', this.unitPrice);
         if(this.gold >= this.unitPrice || ignoreMoney){
             const type = this.unitTypes[Math.floor(Math.random()*this.unitTypes.length)];
-            const newUnit = new Unit(type.name, type.price, type.attributes);
+            const newUnit = new Unit(type.name, type.price, type.attributes, type.description, type.targeting);
             this.unitList.push(newUnit);
             this.gold -= this.unitPrice;
             this.unitPrice = Math.ceil(this.unitPrice*1.5);
@@ -170,12 +168,12 @@ class Table {
         });
         // If should buy automatically
         if(this.automaticBuy) {
+            this.addUnit();
             this.unitList.forEach((unit, index) => {
                 if(unit.attributes.health.curr <= unit.attributes.health.max || this.gold > unit.price*10){
                     this.upgradeUnit(index);
                 }
             });
-            this.addUnit();
         }
         this.cycle += 1;
         return ret;
