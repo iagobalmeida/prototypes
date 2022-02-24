@@ -8,7 +8,8 @@ import {
   faHandFist,
   faShield,
   faXmark,
-  faCoins
+  faCoins,
+  faArrowUp
 } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
@@ -17,6 +18,7 @@ library.add(faHandFist)
 library.add(faShield)
 library.add(faXmark)
 library.add(faCoins)
+library.add(faArrowUp)
 
 Vue.component('font-awesome-icon', FontAwesomeIcon)
 

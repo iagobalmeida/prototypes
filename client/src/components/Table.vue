@@ -1,75 +1,49 @@
 <template>
     <div class="`col-12 ${owned ? 'order-1' : 'order-0'}`">
-        <!-- <UnitList :tableIndex="tableIndex" :unitList="enemyList" v-on:handleUpgradeUnit="() => {}"/>
-        <UnitList :tableIndex="tableIndex" :unitList="unitList" v-on:handleUpgradeUnit="() => {}"/> -->
-        <!-- <h5 class="my-2">Inimigos</h5> -->
         <div class="d-flex justify-content-start align-items-center flex-row mb-3 overflow-auto">
-            <Unit
+          <TableUnit
             v-for="(enemy, enemyIndex) in enemyList" 
-            :key="`table_${tableIndex}_enemy_${enemyIndex}`" 
-            :unitIndex="enemyIndex" 
-            :owned="false"
-            :attack="enemy.attributes.attack.curr"
-            :deffense="enemy.attributes.deffense.curr"
+            :key="`table_${tableIndex}_enemy_${enemyIndex}`"
+            :index="enemyIndex"
+            :addClass="!owned ? 'bg-dark border-danger' : ''"
+            :hiddenDetails="!owned"
+            :type="enemy.type"
+            :tier="enemy.attributes.tier.curr"
             :healthCurr="enemy.attributes.health.curr"
             :healthMax="enemy.attributes.health.max"
+            :attack="enemy.attributes.attack.curr"
+            :deffense="enemy.attributes.deffense.curr"
             :price="enemy.price"
-            :tierCurr="enemy.attributes.tier.curr"
-            :type="enemy.type"
-            :addClass="owned ? `border-danger` : `bg-dark border-danger`"
-            :description="enemy.description"
-            :hideImage="hideUnitImages"
-            v-on:handleUpgradeUnit="() => {}"/>
-            <Unit
+          />
+          <TableUnit
             v-if="enemyList.length == 0"
-            :key="`table_${tableIndex}_enemy_empty`" 
-            :unitIndex="0" 
-            :owned="false"
-            :attack="0"
-            :deffense="0"
-            :healthCurr="0"
-            :healthMax="0"
-            :price="0"
-            :tierCurr="0"
-            type=""
-            description="Sem descrição"
-            :addClass="owned ? `border-danger` : `bg-dark border-danger`"
-            :hideImage="hideUnitImages"
-            v-on:handleUpgradeUnit="() => {}"/>
+            :hiddenDetails="!owned"
+            :hidden="true"
+          />
         </div>
         <div class="d-flex justify-content-start align-items-center flex-row mb-3 overflow-auto">
-            <Unit
-            v-for="(unit, unitIndex) in unitList" 
-            :key="`table_${tableIndex}_unit_${unitIndex}`" 
-            :unitIndex="unitIndex" 
-            :owned="owned"
-            :attack="unit.attributes.attack.curr"
-            :deffense="unit.attributes.deffense.curr"
-            :healthCurr="unit.attributes.health.curr"
-            :healthMax="unit.attributes.health.max"
-            :price="unit.price"
-            :tierCurr="unit.attributes.tier.curr"
-            :type="unit.type"
-            :hideImage="hideUnitImages"
-            :addClass="owned ? `` : `bg-dark`"
-            :description="unit.description"
-            v-on:handleUpgradeUnit="handleUpgradeUnit"/>
-            <Unit
-            v-if="unitList.length == 0"
-            :key="`table_${tableIndex}_unit_empty`" 
-            :unitIndex="0" 
-            :owned="true"
-            :attack="0"
-            :deffense="0"
-            :healthCurr="0"
-            :healthMax="0"
-            :price="-1"
-            :tierCurr="0"
-            type=""
-            :addClass="owned ? `bg-light` : `bg-dark`"
-            description="Sem descrição"
-            :hideImage="hideUnitImages"
-            v-on:handleUpgradeUnit="() => {}"/>
+            <TableUnit
+              v-for="(unit, unitIndex) in unitList" 
+              :key="`table_${tableIndex}_unit_${unitIndex}`"
+              :index="unitIndex"
+              :addClass="!owned ? 'bg-dark border-danger' : ''"
+              :hiddenDetails="!owned"
+              :owned="owned"
+              :type="unit.type"
+              :tier="unit.attributes.tier.curr"
+              :healthCurr="unit.attributes.health.curr"
+              :healthMax="unit.attributes.health.max"
+              :attack="unit.attributes.attack.curr"
+              :deffense="unit.attributes.deffense.curr"
+              :price="unit.price"
+              v-on:handleUpgradeUnit="handleUpgradeUnit"
+            />
+            <TableUnit
+              v-if="unitList.length == 0"
+              :hiddenDetails="!owned"
+              :hidden="true"
+              :owned="owned"
+            />
         </div>
         <div class="row mb-3" v-if="owned">
           <div class="col-12">
@@ -86,7 +60,7 @@
                         </div>
                     </div>
                     <div class="progress">
-                        <div class="progress-bar bg-success progress-bar-striped progress-bar-animated" :style="`width:${Math.round(100*life/500)}%;`"></div>
+                        <div class="progress-bar bg-success progress-bar-striped progress-bar-animated" :style="`width:${lifeWidth}%; height:50px;`"></div>
                     </div>
                 </div>
             </div>
@@ -96,14 +70,12 @@
 </template>
 
 <script>
-import Unit from './Unit.vue'
-// import UnitList from './UnitList.vue'
+import TableUnit from './TableUnit.vue'
 
 export default {
   name: 'Table',
   components: {
-    Unit,
-    // UnitList
+    TableUnit
   },
   data: () => ({
   }),
@@ -117,6 +89,11 @@ export default {
     userName:   String,
     unitPrice:  Number,
     hideUnitImages: { type: Boolean, default: false }
+  },
+  computed: {
+    lifeWidth() {
+      return Math.round(100*this.life/500);
+    }
   },
   methods: {
     handleUnitAddClick() {

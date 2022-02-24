@@ -20,23 +20,20 @@
 
     <div class="row" v-else v-show="user.status == 'idle'">
       <div class="col-12 text-white">
-        <!-- <h3>Unidades</h3> -->
         <div class="d-flex justify-content-start align-items-center flex-row mb-3">
-          <Unit
+          <HomeUnit
           v-for="(unit, unitIndex) in user.data.unitTypes"
           :key="`table_type_unit_${unitIndex}`"
-          :unitIndex="unitIndex" 
+          :index="unitIndex" 
           :owned="false"
           :attack="unit.attributes.attack.curr"
           :deffense="unit.attributes.deffense.curr"
           :healthCurr="unit.attributes.health.curr"
           :healthMax="unit.attributes.health.max"
           :price="unit.price"
-          :tierCurr="unit.attributes.tier.curr"
+          :tier="unit.attributes.tier.curr"
           :type="unit.name"
-          :showDescription="true"
-          :description="unit.description"
-          v-on:handleUpgradeUnit="handleUpgradeUnit"/>
+          :description="unit.description"/>
         </div>
         <div class="row mb-3">
           <div class="col-12">
@@ -69,23 +66,7 @@
       </div>
     </div>
 
-    <div class="row justify-content-center" v-if="tables.length > 0">
-      <!-- <Table
-      v-for="(table, tableIndex) in userTable"
-      :key="`table_${tableIndex}`"
-      :gold="table.gold"
-      :life="table.life"
-      :socketId="socketId"
-      :userId="table.userId"
-      :tableIndex="tableIndex"
-      :userName="table.userName"
-      :unitList="table.unitList"
-      :enemyList="table.enemyList"
-      :owned="table.userId == socketId"
-      :unitPrice="table.unitPrice"
-      v-on:handleUnitAddClick="handleUnitAddClick"
-      v-on:handleUpgradeUnit="handleUpgradeUnit"
-      /> -->
+    <div class="row justify-content-center" v-if="tables.length > 0 && (user.status != 'won' && user.status !='lost')">
       <Table
       :gold="oponentTable.gold"
       :life="oponentTable.life"
@@ -98,8 +79,6 @@
       :owned="false"
       :unitPrice="oponentTable.unitPrice"
       :hideUnitImages="true"
-      v-on:handleUnitAddClick="handleUnitAddClick"
-      v-on:handleUpgradeUnit="handleUpgradeUnit"
       />
       <Table
       :gold="userTable.gold"
@@ -119,11 +98,41 @@
     </div>
 
     <div class="row justify-content-center" v-show="user.status == 'won' || user.status == 'lost'">
-      <div class="col-6 mt-5">
+      <div class="col mt-5">
         <div class="card">
           <div class="card-body">
-            <h2 class="mb-3" v-if="user.status == 'won'">Você venceu!</h2>
-            <h2 class="mb-3" v-else>Você perdeu!</h2>
+            <h2 class="mb-3" v-if="user.status == 'won'">Você venceu com:</h2>
+            <h2 class="mb-3" v-else>Você perdeu para:</h2>
+              <div class="d-flex justify-content-start align-items-center flex-row mb-3" v-if="user.status == 'won'">
+                <TableUnit
+                  v-for="(unit, unitIndex) in userTable.unitList"
+                  :key="`result_unit_${unitIndex}`"
+                  :index="unitIndex"
+                  :type="unit.type"
+                  :tier="unit.attributes.tier.curr"
+                  :healthCurr="unit.attributes.health.curr"
+                  :healthMax="unit.attributes.health.max"
+                  :attack="unit.attributes.attack.curr"
+                  :deffense="unit.attributes.deffense.curr"
+                  :owned="true"
+                  :price="unit.price"
+                />
+              </div>
+              <div class="d-flex justify-content-start align-items-center flex-row mb-3" v-if="user.status == 'lost'">
+                <TableUnit
+                  v-for="(unit, unitIndex) in oponentTable.unitList"
+                  :key="`result_unit_${unitIndex}`"
+                  :index="unitIndex"
+                  :type="unit.type"
+                  :tier="unit.attributes.tier.curr"
+                  :healthCurr="unit.attributes.health.curr"
+                  :healthMax="unit.attributes.health.max"
+                  :attack="unit.attributes.attack.curr"
+                  :deffense="unit.attributes.deffense.curr"
+                  :owned="true"
+                  :price="unit.price"
+                />
+              </div>
             <button class="btn btn-primary" v-on:click="handleEndContinueClick">Continuar</button>
           </div>
         </div>
@@ -137,13 +146,15 @@
 <script>
 // import HelloWorld from './components/HelloWorld.vue'
 import Table from './components/Table.vue'
-import Unit from './components/Unit.vue'
+import HomeUnit from './components/HomeUnit.vue'
+import TableUnit from './components/TableUnit.vue'
 
 export default {
   name: 'App',
   components: {
     Table,
-    Unit
+    HomeUnit,
+    TableUnit
   },
   data: () => ({
     socketId: '',
@@ -190,13 +201,12 @@ export default {
         })
       });
     },
-    SERVER_MATCH_END: function(data) {
-      const { tables } = data;
-      const userTable = tables.find(table => table.userId == this.socketId);
-      const otherTable = tables.find(table => table.userId != this.socketId);
+    SERVER_MATCH_END: function(/*data*/) {
+      // const { tables } = data;
+      // const userTable = tables.find(table => table.userId == this.socketId);
+      // const otherTable = tables.find(table => table.userId != this.socketId);
       // alert(`Sua vida final: ${userTable.life} \n Vida do ponente: ${otherTable.life}`)
-      this.user.status = userTable.life >= otherTable.life ? 'won' : 'lost';
-      this.tables = [];
+      this.user.status = this.userTable.life >= this.oponentTable.life ? 'won' : 'lost';
     },
   },
   methods: {
@@ -282,6 +292,7 @@ export default {
       }
     },
     handleEndContinueClick() {
+      this.tables = [];
       this.user.status = 'idle';
     }
   }
