@@ -19,8 +19,10 @@ setInterval(() => {
             if(!oponent && (user.searchAttempts += 1) >= maxSearchAttemps) { // 30 segundos procurando
                 user.status = 'playing';
                 user.joinRoom(roomId);
+                var userUnities = user.userData.unitTypes.filter(unitType => user.userData.selectedUnitTypes.includes(unitType.name));
+                console.log(userUnities);
                 //console.log(`Starting match with bot on room #${roomId}`);
-                matches.push(new Match(io, roomId, user.id, user.userData.unitTypes, null, null));
+                matches.push(new Match(io, roomId, user.id, userUnities, null, null));
             }
             if(oponent) {
                 //console.log(`Oponent found!`);
@@ -30,7 +32,9 @@ setInterval(() => {
                 oponent.status = 'playing';
                 oponent.joinRoom(roomId);
                 //console.log(`Starting match with #${oponent.id} on room #${roomId}`);
-                matches.push(new Match(io, roomId, user.id, user.userData.unitTypes, oponent.id, oponent.userData.unitTypes));
+                var userUnities = user.userData.unitTypes.filter(unitType => user.userData.selectedUnitTypes.includes(unitType.name));
+                var oponentUnities = oponent.userData.unitTypes.filter(unitType => oponent.userData.selectedUnitTypes.includes(unitType.name));
+                matches.push(new Match(io, roomId, user.id, userUnities, oponent.id, oponentUnities));
             }
         }
     });

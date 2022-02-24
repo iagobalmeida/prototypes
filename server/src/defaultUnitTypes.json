@@ -5,10 +5,10 @@
             "price": 5,
             "attributes": {
                 "tier":       { "curr": 1,      "max": 1,     "progress": 1  },
-                "health":     { "curr": 50,     "max": 50,    "progress": 20 },
+                "health":     { "curr": 80,     "max": 80,    "progress": 25 },
                 "combo":      { "curr": 0,      "max": 0,     "progress": 1  },
-                "attack":     { "curr": 1.5,    "max": 1.5,   "progress": 1.5  },
-                "deffense":   { "curr": 1.5,    "max": 1.5,   "progress": 0.5  }
+                "attack":     { "curr": 1.5,    "max": 1.5,   "progress": 1.4  },
+                "deffense":   { "curr": 1.5,    "max": 1.5,   "progress": 0.6  }
             },
             "targeting": "health",
             "description": "Ataca o inimigo com mais saúde."
@@ -18,7 +18,7 @@
             "price": 5,
             "attributes": {
                 "tier":       { "curr": 1,      "max": 1,     "progress": 1   },
-                "health":     { "curr": 60,     "max": 60,    "progress": 20  },
+                "health":     { "curr": 100,    "max": 100,   "progress": 30  },
                 "combo":      { "curr": 0,      "max": 0,     "progress": 0   },
                 "attack":     { "curr": 2,      "max": 2,     "progress": 1.5 },
                 "deffense":   { "curr": 1,      "max": 1,     "progress": 0.25 }
@@ -33,7 +33,7 @@
                 "tier":       { "curr": 1,      "max": 5,     "progress": 1     },
                 "health":     { "curr": 200,    "max": 200,   "progress": 40    },
                 "combo":      { "curr": 0,      "max": 0,     "progress": 0     },
-                "attack":     { "curr": 1.5,    "max": 1.5,   "progress": 1.25  },
+                "attack":     { "curr": 1.5,    "max": 1.5,   "progress": 1.35  },
                 "deffense":   { "curr": 2,      "max": 2,     "progress": 1.1   }
             },
             "targeting": "random",
@@ -46,9 +46,9 @@
             "price": 8,
             "attributes": {
                 "tier":       { "curr": 1,      "max": 1,     "progress": 1   },
-                "health":     { "curr": 22,     "max": 22,    "progress": 4   },
+                "health":     { "curr": 22,     "max": 22,    "progress": 10  },
                 "combo":      { "curr": 0,      "max": 0,     "progress": 0   },
-                "attack":     { "curr": 2,      "max": 2,     "progress": 1.2 },
+                "attack":     { "curr": 2,      "max": 2,     "progress": 1.5 },
                 "deffense":   { "curr": 1.5,    "max": 1.5,   "progress": 0.5 }
             },
             "targeting": "random"

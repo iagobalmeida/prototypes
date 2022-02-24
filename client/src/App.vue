@@ -33,6 +33,8 @@
           :price="unit.price"
           :tier="unit.attributes.tier.curr"
           :type="unit.name"
+          :selected="user.data.selectedUnitTypes.includes(unit.name)"
+          v-on:handleSelectUnit="(unitName) => { handleSelectUnit(unitName) }"
           :description="unit.description"/>
         </div>
         <div class="row mb-3">
@@ -188,6 +190,10 @@ export default {
       this.user.authenticated = true;
       this.user.status = 'idle';
     },
+    SERVER_SELECTED_UNIT_TYPES: function(data) {
+      const { selectedUnitTypes } = data;
+      this.user.data.selectedUnitTypes = selectedUnitTypes;
+    },
     SERVER_MATCH_INIT: function(data) {
       const { tables } = data;
       this.user.status = 'playing';
@@ -259,6 +265,10 @@ export default {
     },
     handleLoginSubmit() {
       this.$socket.emit('CLIENT_LOGIN', { username: this.user.username, password: this.user.password });
+    },
+    handleSelectUnit(unitTypeName) {
+      console.log(unitTypeName);
+      this.$socket.emit('CLIENT_SELECT_UNIT_TYPE', { unitTypeName });
     },
     handleSearchClick() {
       switch(this.user.status) { 

@@ -6,10 +6,10 @@ class Table {
         this.userId         = userId;
         this.userName       = userName;
         this.unitTypes      = types || defaultUnitTypes.unitTypes;
-        this.unitPrice      = 50;
+        this.unitPrice      = 20;
         this.unitList       = [];
         this.enemyList      = [];
-        this.gold           = 125;
+        this.gold           = 50;
         this.life           = 500;
         this.cycle          = 0;
         this.cycleActions   = [];
@@ -55,7 +55,7 @@ class Table {
             const newUnit = new Unit(type.name, type.price, type.attributes, type.description, type.targeting);
             this.unitList.push(newUnit);
             this.gold -= this.unitPrice;
-            this.unitPrice = Math.ceil(this.unitPrice*1.5);
+            this.unitPrice += Math.floor(this.unitPrice/2);
             this.cycleActions.push({
                 type:           'addUnit',
                 index:          this.unitList.length,

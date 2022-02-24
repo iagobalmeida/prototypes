@@ -1,10 +1,10 @@
 <template>
     <div :class="`mx-1 flex-1 wrapper ${hidden ? 'hidden' : ''}`">
-        <div :class="`card ${addClass}`">
+        <div :class="`card ${selected ? 'border-primary bg-primary' : ''}`">
             <div class="card-body shadow-sm p-1">
-                <ul class="list-group bg-transparent">
+                <ul :class="`list-group ${selected ? 'bg-white' : ''}`">
                     <!-- Type and tier -->
-                    <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center flex-row">
+                    <li :class="`list-group-item bg-transparent d-flex justify-content-between align-items-center flex-row ${selected ? 'text-primary' : ''}`">
                         {{typeCapitalized}}
                         <small class="ms-2" v-if="tier > 0">Tier {{tier}}</small>
                     </li>
@@ -35,12 +35,9 @@
                     </li>
                     <!-- Upgrade button -->
                     <a
-                    v-if="owned"
-                    class="list-group-item list-group-item-action list-group-item-secondary"
-                    v-on:click="handleUpgradeUnit">
-                        <b>{{price}}</b>
-                        <font-awesome-icon class="ms-1" size="1x" icon="coins"/>
-                        <font-awesome-icon class="ms-2" size="1x" icon="arrow-up"/>
+                    :class="`list-group-item list-group-item-action ${selected ? 'border-primary text-primary' : 'list-group-item-primary'}`"
+                    v-on:click="handleSelectUnit">
+                        <b>{{selected ? 'Remover' : 'Adicionar'}}</b>
                     </a>
                 </ul>
             </div>
@@ -58,9 +55,9 @@ export default {
   },
   props: {
       index:        { type: Number,  default: 0          },
-      addClass:     { type: String,  default: 'bg-light' },
       owned:        { type: Boolean, default: false      },
       hidden:       { type: Boolean, default: false      },
+      selected:     { type: Boolean, default: false      },
       
       type:         { type: String, default: '' },
       tier:         { type: String, default: '' },
@@ -91,8 +88,8 @@ export default {
       }
   },
   methods: {
-    handleUpgradeUnit() {
-        this.$emit('handleUpgradeUnit', this.index);
+    handleSelectUnit() {
+        this.$emit('handleSelectUnit', this.type);
     },
   },
   watch: {

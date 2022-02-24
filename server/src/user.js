@@ -5,7 +5,7 @@ const dbService = {
         return true;
     },
     getUserData(username) {
-        return { username: username, gold: 100, unitTypes: defaultUnitTypes.unitTypes };
+        return { username: username, gold: 100, unitTypes: defaultUnitTypes.unitTypes, selectedUnitTypes: ['warrior'] };
     }
 }
 
@@ -20,6 +20,7 @@ class User {
         this.searchAttempts = 0;
         this.registerLoginHandlers();
         this.registerMatchmakingHandlers();
+        this.registerUnitTypesHandlers();
     }
     registerLoginHandlers() {
         this._socket.on('CLIENT_LOGIN', data => {
@@ -37,6 +38,21 @@ class User {
             this.userData = {};
             this.status = 'login';
             this.authenticated = false;
+        });
+    }
+    registerUnitTypesHandlers() {
+        this._socket.on('CLIENT_SELECT_UNIT_TYPE', data => {
+            const { unitTypeName } = data;
+            const unitExists = this.userData?.unitTypes?.find(unit => unit.name == unitTypeName);
+            if(unitExists) {
+                const indexOf = this.userData.selectedUnitTypes.findIndex(unitName => unitName == unitTypeName);
+                if(indexOf != -1) {
+                    this.userData.selectedUnitTypes.splice(indexOf, 1);
+                }else{
+                    this.userData.selectedUnitTypes.push(unitTypeName);
+                }
+            }
+            this._socket.emit('SERVER_SELECTED_UNIT_TYPES', { selectedUnitTypes: this.userData.selectedUnitTypes });
         });
     }
     registerMatchmakingHandlers() {
