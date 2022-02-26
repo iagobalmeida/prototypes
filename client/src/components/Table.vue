@@ -55,7 +55,10 @@
                             <button class="btn btn-success w-100 mb-3" v-on:click="handleUnitAddClick">Comprar Unidade {{unitPrice}} <font-awesome-icon class="ms-2" size="1x" icon="coins" /></button>
                         </div>
                         <div class="ms-3">
-                            <h2 class="mb-0 text-dark text-end" >{{userName || 'Sem nome'}}</h2>
+                            <h2 class="text-dark text-start align-items-center d-flex flex-row" >
+                              {{userName || 'Sem nome'}}
+                              <small class="ms-2 fs-5 px-3 py-2 rounded-pill border text-muted"><font-awesome-icon class="me-2" size="1x" icon="circle-chevron-up" />{{rank}}</small>  
+                            </h2>
                             <h3 class="mb-0 text-dark text-end" >{{life}}<small class="text-muted">/500 HP</small></h3>
                         </div>
                     </div>
@@ -88,6 +91,7 @@ export default {
     life:       Number,
     userName:   String,
     unitPrice:  Number,
+    rank:       Number,
     hideUnitImages: { type: Boolean, default: false }
   },
   computed: {

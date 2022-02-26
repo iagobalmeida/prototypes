@@ -1,9 +1,8 @@
-const Unit = require('./unit.js');
-const defaultUnitTypes = require('./defaultUnitTypes.json');
+import { Unit } from './unit.js';
+import { defaultUnitTypes } from '../config/defaultUnitTypes.js';
 
 class Table {
-    constructor(userId, userName, types, automaticBuy=false) {
-        this.userId         = userId;
+    constructor(userName, types, bot=false) {
         this.userName       = userName;
         this.unitTypes      = types || defaultUnitTypes.unitTypes;
         this.unitPrice      = 20;
@@ -13,17 +12,28 @@ class Table {
         this.life           = 500;
         this.cycle          = 0;
         this.cycleActions   = [];
-        this.automaticBuy   = automaticBuy;
+        this.bot            = bot;
         this.maxTier        = 0;
+        this.socketId       = null;
     }
-    surrender() {
-        this.life = 0;
+    surrender(socketInstance) {
         this.gold = 0;
-        this.unitList = [];
+        this.unitList.forEach((unit, unitIndex) => {
+            this.life = 5;
+            const actionList = [unit.applyDamage(unit.attributes.health.curr)];
+            this.cycleActions.push({
+                type:         'enemy',
+                index:        0,
+                targetIndex:  unitIndex,
+                data:         actionList
+            });
+            this.desassociateSocketEvents(socketInstance);
+        });
     }
-    associateSocketEvents(socketInstance) {
+    associateSocket(socketInstance) {
         const that = this;
-        if(this.userId != 'bot'){
+        if(!this.bot){
+            this.socketId = socketInstance.id;
             socketInstance.on('CLIENT_MATCH_UNIT_ADD', function() { that.addUnit() });
             socketInstance.on('CLIENT_MATCH_UNIT_UPGRADE', function(data) {
                 const { index } = data;
@@ -33,18 +43,11 @@ class Table {
         }
     }
     desassociateSocketEvents(socketInstance) {
-        if(this.userId != 'bot'){
+        if(!this.bot){
             socketInstance.off('CLIENT_MATCH_UNIT_ADD', () => {});
             socketInstance.off('CLIENT_MATCH_UNIT_UPGRADE', () => {});
             socketInstance.off('CLIENT_MATCH_SURRENDER', () => {});
         }
-    }
-    log() {
-        const totalUnitHealth = this.unitList.reduce((acc, curr) => (acc + curr.attributes.health.curr), 0).toFixed(2);
-        const totalEnemyHealth = this.enemyList.reduce((acc, curr) => (acc + curr.attributes.health.curr), 0).toFixed(2);
-        const totalUnitTier = this.unitList.reduce((acc, curr) => (acc + curr.attributes.tier.curr), 0);
-        this.maxTier = Math.max(this.maxTier, totalUnitTier);
-        console.log(`${this.userId} / ${this.life} HP / ${this.gold} Gold\t ${this.unitList.length} Unidades (${(totalUnitHealth < 10 ? '0' : '')}${totalUnitHealth} HP total) (${this.maxTier} tier total) / ${this.enemyList.length} Inimigos (${(totalEnemyHealth < 10 ? '0' : '')}${totalEnemyHealth} HP total)`)
     }
     applyDamage(damage) {
         return { damage,  health: this.life = Math.max(0, (this.life - damage).toFixed(2)) };
@@ -69,6 +72,7 @@ class Table {
         }
     }
     upgradeUnit(index, ignoreMoney = false) {
+        if(!this.bot) console.log('Attempting to upgrade unit...');
         if(this.unitList[index] && (this.gold >= this.unitList[index].price || ignoreMoney)) {
             this.gold -= this.unitList[index].price;
             this.unitList[index].executeUpgrade();
@@ -81,8 +85,6 @@ class Table {
                     gold: this.gold
                 }     
             });
-        }else {
-            console.log('ERROR trying to upgrade unit!');
         }
     }
     addUnities(number) {
@@ -167,7 +169,7 @@ class Table {
 
         });
         // If should buy automatically
-        if(this.automaticBuy) {
+        if(this.bot) {
             this.addUnit();
             this.unitList.forEach((unit, index) => {
                 if(unit.attributes.health.curr <= unit.attributes.health.max || this.gold > unit.price*10){
@@ -180,4 +182,4 @@ class Table {
     }
 }
 
-module.exports = Table;
+export { Table };

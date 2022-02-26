@@ -26,7 +26,6 @@ const createAttributeList = (attributes) => {
 
 class Unit {
     constructor(type, price, attributes, description = 'Sem descrição', targetingFunction = 'random') {
-        console.log(`\t\tCreating unit type ${type}`);
         this.type       = type;
         this.price      = parseFloat(price);
         this.description = description;
@@ -109,4 +108,4 @@ class Unit {
     }
 }
 
-module.exports = Unit;
+export { Unit };

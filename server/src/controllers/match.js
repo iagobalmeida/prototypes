@@ -1,25 +1,24 @@
-const Table = require('./table.js');
+import { Table } from './table.js';
 
 class Match {
     // Receives both users ID and UnitTypes (null will create a bot user)
-    constructor(io, roomName, userOneId, userOneUnitTypes, userTwoId, userTwoUnitTypes, debug = false) {
+    constructor(io, roomName, userOneId, userOneUnitTypes, userTwoId, userTwoUnitTypes) {
         this._io = io;
         this.roomName = roomName;
         this.roomClients =  io.in(roomName).clients;
         this.userOneId = userOneId;
-        this.userOneUnitTypes = userOneUnitTypes;
         this.userTwoId = userTwoId;
+        this.userOneUnitTypes = userOneUnitTypes;
         this.userTwoUnitTypes = userTwoUnitTypes;
-        this.debug = debug;
         this.status = 'waiting';
         this.cycle = 0;
         this.cycleEnemy = 0;
         this.cycleEnemyMax = 30;
+        this.tables = [];
     }
     // Emit cycle information to the room
     emitCycle() {
         if(this.tables){
-            // console.log(`Emiting SERVER_MATCH_CYCLE on room #${this.roomName}`);
             this._io.to(this.roomName).emit('SERVER_MATCH_CYCLE', { tables: this.tables.map(table => table.cycleActions) });
             this.tables.forEach(table => table.cycleActions = []);
         }
@@ -31,16 +30,6 @@ class Match {
         this._io.to(this.roomName).emit('SERVER_MATCH_INIT', { tables: this.tables });
     }
 
-    // Emit final information to the room
-    emitEnd() {
-        // console.log(`Emiting SERVER_MATCH_END on room #${this.roomName}`);
-        this._io.to(this.roomName).emit('SERVER_MATCH_END', { tables: this.tables });
-        this.tables.forEach(table =>  {
-            const socketInstance = this._io.sockets.sockets.get(table.userId);
-            table.desassociateSocketEvents(socketInstance);
-        });
-    }
-
     // Logs both tables from the match
     log() {
         this.tables.forEach(table => table.log());
@@ -48,23 +37,23 @@ class Match {
 
     // Initialize the match with [unityNumber] random unities and [enemyNumber] enemies on both tables
     init(unitNumber, enemyNumber) {
-        console.log(`Creating tables for match #${this.roomName}`);
         this.tables = [
-            new Table(this.userOneId || 'bot', 'User', this.userOneUnitTypes, !this.userOneId),
-            new Table(this.userTwoId || 'bot', 'User', this.userTwoUnitTypes, !this.userTwoId)
+            new Table('User', this.userOneUnitTypes, !this.userOneId),
+            new Table('User', this.userTwoUnitTypes, !this.userTwoId)
         ];
         this.cycleEnemy = 0;
         this.cycle = 0;
         //console.log(`Initializing tables for match #${this.roomName}`);
-        this.tables.forEach(table =>  {
+        this.tables.forEach((table, tableIndex) =>  {
+            const userId = tableIndex == 0 ? this.userOneId : this.userTwoId;
+            if(!userId) { return; }
             //console.log(`\t Adding unitites for match #${this.roomName}`);
             table.addUnities(unitNumber);
             //console.log(`\t Adding enemies for match #${this.roomName}`);
             table.addEnemies(enemyNumber);
             //console.log(`\t Associating socket #${table.userId} (${this._io.sockets.sockets})`);
-            const socketInstance = this._io.sockets.sockets.get(table.userId);
-            //console.log(`\t socket #${table.userId}: ${socketInstance}`)
-            table.associateSocketEvents(socketInstance);
+            const socketInstance = this._io.sockets.sockets.get(userId);
+            table.associateSocket(socketInstance);
             table.cycleActions = [];
         })
         this.status = 'running';
@@ -95,7 +84,6 @@ class Match {
 
     // Execute the complete cycle, enemy spawning and enemy transfering routine
     executeCycle() {
-        if(this.debug) { console.clear(); this.log(); }
         this.executeEnemySpawn();
         this.executeEnemyTransfer();
         this.emitCycle();
@@ -106,4 +94,4 @@ class Match {
     isRunning() { return !this.tables || this.tables.reduce((acc, curr) => acc && curr.life > 0, true); }
 }
 
-module.exports = Match;
+export { Match };

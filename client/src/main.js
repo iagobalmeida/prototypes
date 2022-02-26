@@ -9,7 +9,9 @@ import {
   faShield,
   faXmark,
   faCoins,
-  faArrowUp
+  faArrowUp,
+  faLock,
+  faCircleChevronUp
 } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
@@ -19,6 +21,8 @@ library.add(faShield)
 library.add(faXmark)
 library.add(faCoins)
 library.add(faArrowUp)
+library.add(faLock)
+library.add(faCircleChevronUp);
 
 Vue.component('font-awesome-icon', FontAwesomeIcon)
 
@@ -31,6 +35,7 @@ Vue.mixin({
         warrior:  require('./assets/unities/warrior.png'),
         thief:    require('./assets/unities/thief.png'),
         mage:     require('./assets/unities/mage.png'),
+        pigeon:   require('./assets/unities/pigeon.png'),
         enemy:    require('./assets/unities/enemy.png'),
       };
     }

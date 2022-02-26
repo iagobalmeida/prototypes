@@ -102,20 +102,6 @@ export default {
     handleUpgradeUnit() {
         this.$emit('handleUpgradeUnit', this.index);
     },
-  },
-  watch: {
-      healthCurr(newVal, oldVal) {
-          if(!this.hideImage) {
-            if(newVal > oldVal) {
-                this.$refs['image'].style.transform = `scale(1.1)`;
-            }else {
-                this.$refs['image'].style.transform = this.owned ? `translateY(10px)` : `translateY(-10px)`;
-            }
-            setTimeout(() => {
-                this.$refs['image'].style.transform = `translateY(0px) scale(1)`;
-            }, 125);
-          }
-      }
   }
 }
 </script>

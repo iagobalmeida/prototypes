@@ -1,11 +1,22 @@
-const httpServer = require("http").createServer();
-const io = require("socket.io")(httpServer, { cors: { origin: '*' } });
-const User = require("./src/user.js");
-const Match = require("./src/match.js");
+import { createServer } from "http";
+import { Server } from "socket.io";
+import { User } from "./src/controllers/user.js";
+import { Match } from "./src/controllers/match.js";
+import { defaultUnitTypes } from './src/config/defaultUnitTypes.js';
+
+import mongoose from "mongoose";
+
+mongoose.connect('mongodb+srv://admin:admin@sistemasinternet.mw31i.mongodb.net/tinytowers?retryWrites=true&w=majority', async () => {
+    console.log('Connected to MongoDb');
+});
+
+const httpServer = createServer();
+const io = new Server(httpServer, { cors: { origin: '*' }});
 
 const maxSearchAttemps = 2;
 const users = [];
 var matches = [];
+var doneMatches = [];
 
 // Matchmaking
 setInterval(() => {
@@ -19,7 +30,9 @@ setInterval(() => {
             if(!oponent && (user.searchAttempts += 1) >= maxSearchAttemps) { // 30 segundos procurando
                 user.status = 'playing';
                 user.joinRoom(roomId);
-                var userUnities = user.userData.unitTypes.filter(unitType => user.userData.selectedUnitTypes.includes(unitType.name));
+
+                var userUnities = defaultUnitTypes.unitTypes.filter(unit => user.userData.selectedTypes.includes(unit.name));
+                
                 console.log(userUnities);
                 //console.log(`Starting match with bot on room #${roomId}`);
                 matches.push(new Match(io, roomId, user.id, userUnities, null, null));
@@ -32,8 +45,10 @@ setInterval(() => {
                 oponent.status = 'playing';
                 oponent.joinRoom(roomId);
                 //console.log(`Starting match with #${oponent.id} on room #${roomId}`);
-                var userUnities = user.userData.unitTypes.filter(unitType => user.userData.selectedUnitTypes.includes(unitType.name));
-                var oponentUnities = oponent.userData.unitTypes.filter(unitType => oponent.userData.selectedUnitTypes.includes(unitType.name));
+                var userUnities = defaultUnitTypes.unitTypes.filter(unit => user.userData.selectedTypes.includes(unit.name));
+                var oponentUnities = defaultUnitTypes.unitTypes.filter(unit => oponent.userData.selectedTypes.includes(unit.name));
+
+                
                 matches.push(new Match(io, roomId, user.id, userUnities, oponent.id, oponentUnities));
             }
         }
@@ -43,7 +58,6 @@ setInterval(() => {
 // Match executing
 setInterval(() => {
     // Executing and Removing done matches
-    const doneMatches = [];
     matches.forEach((match, matchIndex) => {
         switch(match.status) {
             case 'waiting':
@@ -53,15 +67,18 @@ setInterval(() => {
                 match.executeCycle();
             break;
             case 'finished':
-                match.emitEnd();
-                const userOne = users.find(user => user.id == match.userOneId);
-                userOne.status = 'idle';
-                if(match.tables[0].life > 0) { userOne.gold += 20; }
-                if(match.userOneId != 'bot'){
-                    const userTwo = users.find(user => user.id == match.userOneId);
-                    userTwo.status = 'idle';
-                    if(match.tables[1].life > 0) { userTwo.gold += 20; }
-                }
+                const userOne = match.userOneId != 'bot' ? users.filter(user => user.id == match.userOneId) : null;
+                const userTwo = match.userTwoId != 'bot' ? users.filter(user => user.id == match.userTwoId) : null;
+                const matchUsers = [userOne, userTwo]
+                match.tables.forEach((table, tableIndex) => {
+                    if(!matchUsers[tableIndex] || !matchUsers[tableIndex]._socket) return;
+                    table.desassociateSocketEvents(matchUsers[tableIndex]._socket);
+                    if(table.life > 0) {
+                        matchUsers[tableIndex].handleVictory();
+                    }else {
+                        matchUsers[tableIndex].handleDefeat();
+                    }
+                });
                 doneMatches.push(matchIndex);
             break;
         }
@@ -75,7 +92,20 @@ const onConnection = (socket) => {
     console.log(`Socket #${socket.id} connected`);
     users.push(new User(io, socket));
     const userIndex = users.length - 1;
-    socket.on('disconnect', () => {
+    socket.on('disconnect', async () => {
+        await users[userIndex].forceLogoff();
+        matches.forEach((match, matchIndex) => {
+            const userTableIndex = match.tables.findIndex(table => table.socketId == socket.id);
+            if(userTableIndex != -1) {
+                match.tables[userTableIndex].surrender(socket);
+                match.tables.filter(table => table.socketId != socket.id).forEach(otherTable => {
+                    if(otherTable.socketId == null) return;
+                    var otherTableUserIndex = users.findIndex(user => user._socket.id == otherTable.socketId);
+                    users[otherTableUserIndex].handleVictory();
+                });
+                matches.splice(matchIndex, 1);
+            }
+        });
         console.log(`Socket #${socket.id} disconnected`);
         users.splice(userIndex, 1);
     })
@@ -84,69 +114,3 @@ const onConnection = (socket) => {
 io.on("connection", onConnection);
 httpServer.listen(3000);
 console.log('Server up on port :3000');
-
-/* Em um caso real: */
-// const partida = new Match(<userId>, <userUnitTypes>[], <userId>, <userUnitTypes>[], <debug>?);
-// const partida = new Match(null, null, null, null, true);
-// partida.init(2, 1);
-
-// // Talvez um interval ( no fim será removido o getUserInput )
-// const loop = () => {
-//     partida.executeCycle();
-//     if(partida.isRunning()) {
-//         setTimeout(loop, 500);
-//     }else{
-//         partida.log();
-//         console.log('FIM DA PARTIDA');
-//         getUserInput();
-//     }
-// }
-
-// const getUserInput = () => {
-//     console.log('\n');
-//     partida.tables[0].log();
-//     partida.tables[1].log();
-//     const text = `
-// [u1] - Inserir unidade em mesa 1 \t [i1] - Inserir inimigo em mesa 1
-// [u2] - Inserir unidade em mesa 2 \t [i2] - Inserir inimigo em mesa 2
-// [c]   - Começar a partida
-// [i]   - Inicializar instancia
-// [l]   - Listar instancia
-// >`;
-//     rl.question(text, async (input) =>{
-//         switch(input) {
-//             case 'u1':
-//                 partida.tables[0].addUnit(true);
-//                 partida.tables[0].gold = partida.tables[0].unitPrice;
-//             break;
-//             case 'u2':
-//                 partida.tables[1].addUnit(true);
-//                 partida.tables[1].gold = partida.tables[1].unitPrice;
-//             break;
-//             case 'i1':
-//                 partida.tables[0].addEnemy();
-//             break;
-//             case 'i2':
-//                 partida.tables[1].addEnemy();
-//             break;
-//             case 'c':
-//                 partida.init(2, 1);
-//                 loop();
-//             break;
-//             case 'i':
-//                 partida.init(2, 1);
-//             break;
-//             case 'l':
-//                 console.log(partida);
-//                 console.log('[Enter] - Voltar');
-//                 rl.question('', getUserInput);
-//             break;
-//             default:
-//                 console.log('Comando não reconhecido');
-//                 getUserInput();
-//             break;
-//         }
-//     });
-// }
-
-// getUserInput();
